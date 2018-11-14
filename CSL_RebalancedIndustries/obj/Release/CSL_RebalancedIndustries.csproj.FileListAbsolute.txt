@@ -1,0 +1,15 @@
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\CSL_RebalancedIndustriesDistricts.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\CSL_RebalancedIndustriesDistricts.pdb
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\0Harmony.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\Assembly-CSharp.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\ColossalManaged.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\ICities.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\UnityEngine.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\PopsApiWrapper.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\Assembly-CSharp-firstpass.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\bin\Release\ICSharpCode.SharpZipLib.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\obj\Release\CSL_RebalancedIndustries.csprojAssemblyReference.cache
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\obj\Release\CSL_RebalancedIndustries.csproj.CoreCompileInputs.cache
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\obj\Release\CSL_RebalancedIndustries.csproj.CopyComplete
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\obj\Release\CSL_RebalancedIndustriesDistricts.dll
+D:\CSL Mods\CSL_RebalancedIndustries\CSL_RebalancedIndustries\CSL_RebalancedIndustries\obj\Release\CSL_RebalancedIndustriesDistricts.pdb

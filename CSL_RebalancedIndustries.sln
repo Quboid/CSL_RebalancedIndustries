@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2048
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSL_RebalancedIndustries", "CSL_RebalancedIndustries\CSL_RebalancedIndustries.csproj", "{55E63E35-6F64-49CD-BED7-E7AB572664E5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{55E63E35-6F64-49CD-BED7-E7AB572664E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{55E63E35-6F64-49CD-BED7-E7AB572664E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{55E63E35-6F64-49CD-BED7-E7AB572664E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{55E63E35-6F64-49CD-BED7-E7AB572664E5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F55283FB-140B-4563-AF5C-2B6837B1E7C6}
+	EndGlobalSection
+EndGlobal
