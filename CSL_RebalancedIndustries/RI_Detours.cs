@@ -28,8 +28,8 @@ namespace CSL_RebalancedIndustries
             {
                 // Output
                 cargoDiff = Convert.ToInt32((buildingData.m_customBuffer1 - __state) / RI_Data.GetFactorCargo(__instance.m_outputResource));
-                //Debug.Log($"ID:{buildingID}={newCargo}, state:{__state}, buff:{buildingData.m_customBuffer1}, diff:{cargoDiff}");
-                buildingData.m_customBuffer1 = (ushort)Mathf.Clamp(__state - cargoDiff, 0, 64000);
+                Debug.Log($"ID:{buildingID}={(ushort)Mathf.Clamp(__state + cargoDiff, 0, 64000)} ({__state - cargoDiff}), state:{__state}, buff:{buildingData.m_customBuffer1}, diff:{cargoDiff}");
+                buildingData.m_customBuffer1 = (ushort)Mathf.Clamp(__state + cargoDiff, 0, 64000);
             }
             else
             {
