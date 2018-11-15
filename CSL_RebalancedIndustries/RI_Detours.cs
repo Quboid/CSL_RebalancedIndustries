@@ -1,6 +1,7 @@
 ﻿using ColossalFramework;
 using ColossalFramework.UI;
 using Harmony;
+using ICities;
 using UnityEngine;
 using System;
 
@@ -21,14 +22,14 @@ namespace CSL_RebalancedIndustries
 
         public static void Postfix(ushort buildingID, ref Building buildingData, ExtractingFacilityAI __instance, ref ushort __state)
         {
-            ushort cargoDiff;
+            int cargoDiff;
 
             if (Mod.IsIndustriesBuilding(__instance))
             {
                 // Output
-                cargoDiff = Convert.ToUInt16((buildingData.m_customBuffer1 - __state) / RI_Data.GetFactorCargo(__instance.m_outputResource));
-                //Debug.Log($"ID:{buildingID}={(ushort)(__state + cargoDiff)}, {(__state + cargoDiff)}, state:{__state}, buff:{buildingData.m_customBuffer1}, diff:{cargoDiff}");
-                buildingData.m_customBuffer1 = (ushort)(__state + cargoDiff);
+                cargoDiff = Convert.ToInt32((buildingData.m_customBuffer1 - __state) / RI_Data.GetFactorCargo(__instance.m_outputResource));
+                //Debug.Log($"ID:{buildingID}={newCargo}, state:{__state}, buff:{buildingData.m_customBuffer1}, diff:{cargoDiff}");
+                buildingData.m_customBuffer1 = (ushort)Mathf.Clamp(__state - cargoDiff, 0, 64000);
             }
             else
             {
@@ -38,95 +39,83 @@ namespace CSL_RebalancedIndustries
     }
 
 
+    // Includes Unique Factories
     [HarmonyPatch(typeof(ProcessingFacilityAI))]
     [HarmonyPatch("ProduceGoods")]
     class RI_ProcessingFacilityProduceGoods
     {
         public static void Prefix(ushort buildingID, ref Building buildingData, ProcessingFacilityAI __instance, out ushort[] __state)
         {
-            __state = new ushort[2];
+            __state = new ushort[5];
 
             if (Mod.IsIndustriesBuilding(__instance))
             {
-                __state[0] = buildingData.m_customBuffer1; // Output
-                __state[1] = buildingData.m_customBuffer2; // Input
+                __state[0] = buildingData.m_customBuffer1; // Output (increases during production)
+                __state[1] = buildingData.m_customBuffer2; // Input1 (used during prodction)
+                __state[2] = Mod.CombineBytes(buildingData.m_teens, buildingData.m_youngs); // Input2
+                __state[3] = Mod.CombineBytes(buildingData.m_adults, buildingData.m_seniors); // Input3
+                __state[4] = Mod.CombineBytes(buildingData.m_education1, buildingData.m_education2); // Input4
             }
             else
-            {
-                __state[0] = 0;
-                __state[1] = 0;
-            }
+                __state[0] = __state[1] = __state[2] = __state[3] = __state[4] = 0;
         }
 
 
         public static void Postfix(ushort buildingID, ref Building buildingData, ProcessingFacilityAI __instance, ref ushort[] __state)
         {
-            ushort cargoDiff;
+            int cargoDiff = 0;
 
             if (Mod.IsIndustriesBuilding(__instance))
             {
-                // Output
-                cargoDiff = Convert.ToUInt16((buildingData.m_customBuffer1 - __state[0]) / RI_Data.GetFactorCargo(__instance.m_outputResource));
-                buildingData.m_customBuffer1 = (ushort)(__state[0] + cargoDiff);
-
                 // Input
-                cargoDiff = Convert.ToUInt16((__state[1] - buildingData.m_customBuffer2) / RI_Data.GetFactorCargo(__instance.m_inputResource1));
-                buildingData.m_customBuffer2 = (ushort)(__state[1] - cargoDiff);
-                //Debug.Log($"ID:{buildingID}, state:{__state}, buff:{buildingData.m_customBuffer2}, diff:{cargoDiff}");
+                if (__instance.m_inputResource1 != TransferManager.TransferReason.None)
+                {
+                    cargoDiff = Convert.ToInt32((__state[1] - buildingData.m_customBuffer2) / RI_Data.GetFactorCargo(__instance.m_inputResource1));
+                    buildingData.m_customBuffer2 = (ushort)Mathf.Clamp(__state[1] - cargoDiff, 0, 64000);
+                }
+
+                if (__instance.m_inputResource2 != TransferManager.TransferReason.None)
+                {
+                    cargoDiff = Convert.ToInt32((__state[2] - Mod.CombineBytes(buildingData.m_teens, buildingData.m_youngs)) / RI_Data.GetFactorCargo(__instance.m_inputResource2));
+                    Mod.SplitBytes((ushort)Mathf.Clamp(__state[2] - cargoDiff, 0, 64000), ref buildingData.m_teens, ref buildingData.m_youngs);
+                }
+
+                if (__instance.m_inputResource3 != TransferManager.TransferReason.None)
+                {
+                    cargoDiff = Convert.ToInt32((__state[3] - Mod.CombineBytes(buildingData.m_adults, buildingData.m_seniors)) / RI_Data.GetFactorCargo(__instance.m_inputResource3));
+                    Mod.SplitBytes((ushort)Mathf.Clamp(__state[3] - cargoDiff, 0, 64000), ref buildingData.m_adults, ref buildingData.m_seniors);
+                }
+
+                if (__instance.m_inputResource4 != TransferManager.TransferReason.None)
+                {
+                    cargoDiff = Convert.ToInt32((__state[4] - Mod.CombineBytes(buildingData.m_education1, buildingData.m_education2)) / RI_Data.GetFactorCargo(__instance.m_inputResource4));
+                    Mod.SplitBytes((ushort)Mathf.Clamp(__state[4] - cargoDiff, 0, 64000), ref buildingData.m_education1, ref buildingData.m_education2);
+                }
+
+                // Output (materials being produced)
+                if (__instance.m_outputResource != TransferManager.TransferReason.None)
+                {
+                    //try
+                    //{
+                    //} catch (OverflowException Ex)
+                    //{
+                    //    Debug.Log($"Output overflow caught: cargoDiff:{buildingData.m_customBuffer1}-{__state[0]}={(buildingData.m_customBuffer1 - __state[0])} factor:{RI_Data.GetFactorCargo(__instance.m_outputResource)}\n{Ex.ToString()}");
+                    //    Singleton<SimulationManager>.instance.SimulationPaused = true;
+                    //}
+
+                    cargoDiff = Convert.ToInt32((buildingData.m_customBuffer1 - __state[0]) / RI_Data.GetFactorCargo(__instance.m_outputResource));
+                    buildingData.m_customBuffer1 = (ushort)Mathf.Clamp(__state[0] + cargoDiff, 0, 64000);
+                    //Debug.Log($"Out ID:{buildingID}, state:{__state}, buff:{buildingData.m_customBuffer1}, diff:{cargoDiff}");
+                }
+
+                //if (__instance is UniqueFactoryAI)
+                //    Debug.Log($"PF:{__instance.name}, ID:{buildingID}, lastDiff:{cargoDiff} (Old:{__state[0]}-{__state[1]},{__state[2]},{__state[3]},{__state[4]} - New:{buildingData.m_customBuffer1}-{buildingData.m_customBuffer2},{Mod.CombineBytes(buildingData.m_teens, buildingData.m_youngs)},{Mod.CombineBytes(buildingData.m_adults, buildingData.m_seniors)},{Mod.CombineBytes(buildingData.m_education1, buildingData.m_education2)})");
+                //else
+                //    Debug.Log($"PF:{__instance.name}, ID:{buildingID}, lastDiff:{cargoDiff} (Old:{__state[0]}-{__state[1]} - New:{buildingData.m_customBuffer1}-{buildingData.m_customBuffer2})");
             }
             else
             {
                 Mod.DebugLine($"Unknown PF instance {__instance.name} ({__instance.GetType()})");
-            }
-        }
-    }
-
-
-    [HarmonyPatch(typeof(UniqueFactoryAI))]
-    [HarmonyPatch("ProduceGoods")]
-    class RI_UniqueFactoryProduceGoods
-    {
-        public static void Prefix(ushort buildingID, ref Building buildingData, ProcessingFacilityAI __instance, out int[] __state)
-        {
-            __state = new int[4];
-
-            if (Mod.IsIndustriesBuilding(__instance)) { 
-                __state[0] = buildingData.m_customBuffer2;
-                __state[1] = Mod.CombineBytes(buildingData.m_teens, buildingData.m_youngs);
-                __state[2] = Mod.CombineBytes(buildingData.m_adults, buildingData.m_seniors);
-                __state[3] = Mod.CombineBytes(buildingData.m_education1, buildingData.m_education2);
-            }
-            else
-                __state[0] = __state[1] = __state[2] = __state[3] = 0;
-        }
-
-
-        public static void Postfix(ushort buildingID, ref Building buildingData, ProcessingFacilityAI __instance, ref int[] __state)
-        {
-            ushort cargoDiff;
-
-            if (Mod.IsIndustriesBuilding(__instance))
-            {
-                // Input
-                cargoDiff = Convert.ToUInt16((__state[0] - buildingData.m_customBuffer2) / RI_Data.GetFactorCargo(__instance.m_inputResource1));
-                buildingData.m_customBuffer2 = (ushort)(__state[0] - cargoDiff);
-
-                cargoDiff = Convert.ToUInt16((__state[1] - Mod.CombineBytes(buildingData.m_teens, buildingData.m_youngs)) / RI_Data.GetFactorCargo(__instance.m_inputResource2));
-                Mod.SplitBytes(Convert.ToUInt16(__state[1] - cargoDiff), ref buildingData.m_teens, ref buildingData.m_youngs);
-
-                cargoDiff = Convert.ToUInt16((__state[2] - Mod.CombineBytes(buildingData.m_adults, buildingData.m_seniors)) / RI_Data.GetFactorCargo(__instance.m_inputResource3));
-                Mod.SplitBytes(Convert.ToUInt16(__state[2] - cargoDiff), ref buildingData.m_adults, ref buildingData.m_seniors);
-
-                cargoDiff = Convert.ToUInt16((__state[3] - Mod.CombineBytes(buildingData.m_education1, buildingData.m_education2)) / RI_Data.GetFactorCargo(__instance.m_inputResource4));
-                Mod.SplitBytes(Convert.ToUInt16(__state[3] - cargoDiff), ref buildingData.m_education1, ref buildingData.m_education2);
-
-                //Debug.Log($"UF:{__instance.name}, ID:{buildingID}, lastDiff:{cargoDiff}");
-                //Debug.Log($"state:{__state[0]},{__state[1]},{__state[2]},{__state[3]}");
-                //Debug.Log($"  new:{buildingData.m_customBuffer2},{_combine(buildingData.m_teens, buildingData.m_youngs)},{_combine(buildingData.m_adults, buildingData.m_seniors)},{_combine(buildingData.m_education1, buildingData.m_education2)}");
-            }
-            else
-            {
-                Mod.DebugLine($"Unknown UF instance {__instance.name} ({__instance.GetType()})");
             }
         }
     }
