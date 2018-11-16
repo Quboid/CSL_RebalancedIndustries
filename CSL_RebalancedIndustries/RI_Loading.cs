@@ -13,6 +13,7 @@ namespace CSL_RebalancedIndustries
             if (!(mode == LoadMode.LoadGame || mode == LoadMode.LoadScenario || mode == LoadMode.NewGame || mode == LoadMode.NewGameFromScenario)) {
                 return;
             }
+
             HarmonyInstance harmony = Mod.GetHarmonyInstance();
             harmony.PatchAll(Assembly.GetExecutingAssembly());
             Building[] buffer = ColossalFramework.Singleton<BuildingManager>.instance.m_buildings.m_buffer;
@@ -20,13 +21,16 @@ namespace CSL_RebalancedIndustries
             // Reset re-balanced WorkShop assets before applying modifiers
             for (uint i = 0; i < PrefabCollection<BuildingInfo>.LoadedCount(); i++)
             {
-                BuildingInfo prefab = PrefabCollection<BuildingInfo>.GetLoaded(i);
-
-                if (prefab.m_class.m_service == ItemClass.Service.PlayerIndustry)
+                if (PrefabCollection<BuildingInfo>.GetLoaded(i) != null)
                 {
-                    Dictionary<string, string> resetList = RI_Data.GetWSResets();
-                    if (resetList.ContainsKey(prefab.name))
-                        ResetBuildingToVanilla(ref prefab, PrefabCollection<BuildingInfo>.FindLoaded(resetList[prefab.name]));
+                    BuildingInfo prefab = PrefabCollection<BuildingInfo>.GetLoaded(i);
+
+                    if (prefab.m_class.m_service == ItemClass.Service.PlayerIndustry)
+                    {
+                        Dictionary<string, string> resetList = RI_Data.GetWSResets();
+                        if (resetList.ContainsKey(prefab.name))
+                            ResetBuildingToVanilla(ref prefab, PrefabCollection<BuildingInfo>.FindLoaded(resetList[prefab.name]));
+                    }
                 }
             }
 
@@ -84,17 +88,17 @@ namespace CSL_RebalancedIndustries
                         }
                         else if (prefab.m_buildingAI is WarehouseAI ai_w)
                         {
-                            //Mod.DebugLine($"Warehouse {ai_w.name}: T={ai_w.m_truckCount}, SC={ai_w.m_storageCapacity}, ST={ai_w.m_storageType}");
+                            Mod.DebugLine($"Warehouse {ai_w.name}: T={ai_w.m_truckCount}, SC={ai_w.m_storageCapacity}, ST={ai_w.m_storageType}");
                             if (Mod.IsExtractorWarehouse(ai_w))
                             {
                                 if (RI_Data.GetFactorCargo(ai_w.m_storageType) != 1)
                                 {
                                     decimal subfactor = (RI_Data.GetFactorCargo(ai_w.m_storageType) - 1) / 1.5m + 1;
                                     ai_w.m_truckCount = Convert.ToInt32(Math.Ceiling(ai_w.m_truckCount / subfactor));
-                                    if (ai_w.m_truckCount < RI_Data.MIN_VEHICLES)
-                                        ai_w.m_truckCount = RI_Data.MIN_VEHICLES;
-                                    if (ai_w.m_truckCount < (2 * RI_Data.MIN_VEHICLES))
-                                        ai_w.m_truckCount += 1;
+                                    if (ai_w.m_storageCapacity <= RI_Data.TINY_WAREHOUSE_CAPACITY)
+                                        ai_w.m_truckCount = Math.Max(1, ai_w.m_truckCount);
+                                    else
+                                        ai_w.m_truckCount = Math.Max(RI_Data.MIN_VEHICLES, ai_w.m_truckCount);
                                 }
                             }
                             else
@@ -102,16 +106,16 @@ namespace CSL_RebalancedIndustries
                                 if (RI_Data.GetFactorBuilding(ai_w).Production != 1)
                                 {
                                     ai_w.m_truckCount = Convert.ToInt32(ai_w.m_truckCount / RI_Data.GetFactorBuilding(ai_w).Production);
-                                    if (ai_w.m_truckCount < RI_Data.MIN_VEHICLES)
-                                        ai_w.m_truckCount = RI_Data.MIN_VEHICLES;
-                                    if (ai_w.m_truckCount < (2 * RI_Data.MIN_VEHICLES))
-                                        ai_w.m_truckCount += 1;
+                                    if (ai_w.m_storageCapacity <= RI_Data.TINY_WAREHOUSE_CAPACITY)
+                                        ai_w.m_truckCount = Math.Max(1, ai_w.m_truckCount);
+                                    else
+                                        ai_w.m_truckCount = Math.Max(RI_Data.MIN_VEHICLES, ai_w.m_truckCount);
                                 }
                             }
                             ai_w.m_constructionCost = Convert.ToInt32(ai_w.m_constructionCost / RI_Data.GetFactorBuilding(ai_w).Costs);
                             ai_w.m_maintenanceCost = Convert.ToInt32(ai_w.m_maintenanceCost / RI_Data.GetFactorBuilding(ai_w).Costs);
                             SwitchWorkPlaces(ai_w);
-                            //Mod.DebugLine($"       Now {ai_w.name}: T={ai_w.m_truckCount}, SC={ai_w.m_storageCapacity}, ST={ai_w.m_storageType}");
+                            Mod.DebugLine($"       Now {ai_w.name}: T={ai_w.m_truckCount}, SC={ai_w.m_storageCapacity}, ST={ai_w.m_storageType}");
                         }
                         else if (!(prefab.m_buildingAI is AuxiliaryBuildingAI || prefab.m_buildingAI is MainIndustryBuildingAI || prefab.m_buildingAI is DummyBuildingAI))
                         {

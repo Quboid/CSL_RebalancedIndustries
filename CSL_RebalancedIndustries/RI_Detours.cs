@@ -1,4 +1,5 @@
 ﻿using ColossalFramework;
+using ColossalFramework.Globalization;
 using ColossalFramework.UI;
 using Harmony;
 using ICities;
@@ -123,7 +124,7 @@ namespace CSL_RebalancedIndustries
 
     [HarmonyPatch(typeof(IndustryBuildingAI))]
     [HarmonyPatch("GetResourcePrice")]
-    class RI_FactorCargoPrice
+    class RI_IBGetResourcePrice
     {
         public static int Postfix(int price, TransferManager.TransferReason material)
         {
@@ -148,7 +149,7 @@ namespace CSL_RebalancedIndustries
                 //Debug.Log($"EFAI-OST: {id} - {customBuffer}/{capacity}");
                 //___m_outputBuffer.value = IndustryWorldInfoPanel.SafelyNormalize(customBuffer, capacity);
                 ___m_outputSection.tooltip = StringUtils.SafeFormat(
-                    ColossalFramework.Globalization.Locale.Get("INDUSTRYPANEL_BUFFERTOOLTIP"),
+                    Locale.Get("INDUSTRYPANEL_BUFFERTOOLTIP"),
                     IndustryWorldInfoPanel.FormatResource((uint)customBuffer),
                     IndustryWorldInfoPanel.FormatResourceWithUnit((uint)capacity, ai_ef.m_outputResource)
                 );
@@ -212,12 +213,37 @@ namespace CSL_RebalancedIndustries
                 );*/
 
             string text = StringUtils.SafeFormat(
-                ColossalFramework.Globalization.Locale.Get("INDUSTRYPANEL_BUFFERTOOLTIP"), 
+                Locale.Get("INDUSTRYPANEL_BUFFERTOOLTIP"), 
                 IndustryWorldInfoPanel.FormatResource((ulong)(building.m_customBuffer1 * 100 * RI_Data.GetFactorCargo(cargoType))), 
                 IndustryWorldInfoPanel.FormatResourceWithUnit((uint)(ai.m_storageCapacity * RI_Data.GetFactorCargo(cargoType)), cargoType)
             );
             ___m_buffer.tooltip = text;
             ___m_capacityLabel.text = text;
+        }
+    }
+
+
+    [HarmonyPatch(typeof(UniqueFactoryWorldInfoPanel))]
+    [HarmonyPatch("UpdateBindings")]
+    class RI_UFWIPUpdateBindings
+    {
+        public static void Postfix(ref InstanceID ___m_InstanceID, ref UILabel ___m_expenses)
+        {
+            ushort id = ___m_InstanceID.Building;
+            Building building = Singleton<BuildingManager>.instance.m_buildings.m_buffer[id];
+            UniqueFactoryAI ai = (UniqueFactoryAI)building.Info.m_buildingAI;
+            int volume;
+            byte health = Singleton<BuildingManager>.instance.m_buildings.m_buffer[id].m_health;
+
+            volume = health * ai.m_inputRate1 * 16 / 100;
+            long input1 = volume * IndustryBuildingAI.GetResourcePrice(ai.m_inputResource1) / (long)RI_Data.GetFactorCargo(ai.m_inputResource1) / 10000;
+            volume = health * ai.m_inputRate2 * 16 / 100;
+            long input2 = volume * IndustryBuildingAI.GetResourcePrice(ai.m_inputResource2) / (long)RI_Data.GetFactorCargo(ai.m_inputResource2) / 10000;
+            volume = health * ai.m_inputRate3 * 16 / 100;
+            long input3 = volume * IndustryBuildingAI.GetResourcePrice(ai.m_inputResource3) / (long)RI_Data.GetFactorCargo(ai.m_inputResource3) / 10000;
+            volume = health * ai.m_inputRate4 * 16 / 100;
+            long input4 = volume * IndustryBuildingAI.GetResourcePrice(ai.m_inputResource4) / (long)RI_Data.GetFactorCargo(ai.m_inputResource4) / 10000;
+            ___m_expenses.text = (input1 + input2 + input3 + input4).ToString(Settings.moneyFormatNoCents, LocaleManager.cultureInfo);
         }
     }
 

@@ -6,7 +6,9 @@ namespace CSL_RebalancedIndustries
     class RI_Data
     {
         // Industries buildings have at least MINVEHICLES trucks, extractor warehouses have at least MINVEHICLES * 2, other warehouses have at least MINVEHICLES+1 to help ensure less frequent deliveries are regular
-        public const short MIN_VEHICLES = 3;
+        public const short MIN_VEHICLES = 2;
+        // Warehouses have at least MIN_VEHICLES unless they are especially small (size in Kg)
+        public const int TINY_WAREHOUSE_CAPACITY = 40000;
 
         public static Dictionary<ushort, ushort> oldBuffer = new Dictionary<ushort, ushort>();
 
@@ -81,7 +83,7 @@ namespace CSL_RebalancedIndustries
             }
             if (ai is WarehouseAI ai_w)
             {
-                // Warehouse production affects truck count
+                // Warehouse production affects truck count (unused for Extractor Warehouses)
                 switch (ai_w.m_storageType)
                 {
                     case TransferManager.TransferReason.Grain:
@@ -89,9 +91,9 @@ namespace CSL_RebalancedIndustries
                     case TransferManager.TransferReason.Logs:
                     case TransferManager.TransferReason.Ore:
                     case TransferManager.TransferReason.Oil:
-                        return new RI_BuildingFactor { Costs = 1m, Production = 2m, Workers = 2m };
+                        return new RI_BuildingFactor { Costs = 1m, Production = 1m, Workers = 2m };
                 }
-                return new RI_BuildingFactor { Costs = 0.5m, Production = 1.5m, Workers = 1m };
+                return new RI_BuildingFactor { Costs = 0.5m, Production = 2m, Workers = 1m };
             }
 
             Mod.DebugLine($"GetFactorBuilding: Unknown PlayerBuildingAI={ai.name}");
