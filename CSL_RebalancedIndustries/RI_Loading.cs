@@ -16,7 +16,7 @@ namespace CSL_RebalancedIndustries
 
             HarmonyInstance harmony = Mod.GetHarmonyInstance();
             harmony.PatchAll(Assembly.GetExecutingAssembly());
-            Building[] buffer = ColossalFramework.Singleton<BuildingManager>.instance.m_buildings.m_buffer;
+            //Building[] buffer = ColossalFramework.Singleton<BuildingManager>.instance.m_buildings.m_buffer;
 
             // Reset re-balanced WorkShop assets before applying modifiers
             for (uint i = 0; i < PrefabCollection<BuildingInfo>.LoadedCount(); i++)
@@ -179,6 +179,11 @@ namespace CSL_RebalancedIndustries
         {
             IndustryBuildingAI targetAI = (IndustryBuildingAI)target.m_buildingAI;
             IndustryBuildingAI templateAI = (IndustryBuildingAI)template.m_buildingAI;
+
+            if (templateAI == null)
+            {
+                return;
+            }
 
             //Mod.DebugLine($"ConvertWS: name={target.name},{template.name}");
             //Mod.DebugLine($" - construction={targetAI.m_constructionCost},{templateAI.m_constructionCost} - wp0:{targetAI.m_workPlaceCount0},{templateAI.m_workPlaceCount0} - wp1:{targetAI.m_workPlaceCount1},{templateAI.m_workPlaceCount1}");
