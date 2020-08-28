@@ -163,7 +163,7 @@ namespace CSL_RebalancedIndustries
     class RI_CSWIPUpdateBindings
     {
         public static void Postfix(ref ExtractingFacilityAI ___m_extractingFacilityAI, ref ProcessingFacilityAI ___m_processingFacilityAI, ref InstanceID ___m_InstanceID, 
-                                   ref UIPanel ___m_inputSection, ref UIPanel ___m_inputTooltipArea, ref UIPanel ___m_outputSection, ref UIPanel ___m_outputTooltipArea)
+                                   ref UIPanel ___m_inputSection, /*ref UIPanel ___m_inputTooltipArea,*/ ref UIPanel ___m_outputSection)/*, ref UIPanel ___m_outputTooltipArea)*/
         {
             ushort id = ___m_InstanceID.Building;
 
@@ -172,7 +172,7 @@ namespace CSL_RebalancedIndustries
             {
 
                 Building building = Singleton<BuildingManager>.instance.m_buildings.m_buffer[id];
-                _updateTooltip(id, building.m_customBuffer1, ai_ef.GetOutputBufferSize(id, ref building), ai_ef.m_outputResource, ref ___m_outputSection, ref ___m_outputTooltipArea);
+                _updateTooltip(id, building.m_customBuffer1, ai_ef.GetOutputBufferSize(id, ref building), ai_ef.m_outputResource, ref ___m_outputSection);//, ref ___m_outputTooltipArea);
                 //Debug.Log($"EF-{id}");
             }
 
@@ -180,18 +180,19 @@ namespace CSL_RebalancedIndustries
             if (ai_pf != null)
             {
                 Building building = Singleton<BuildingManager>.instance.m_buildings.m_buffer[id];
-                _updateTooltip(id, building.m_customBuffer2, ai_pf.GetInputBufferSize1(id, ref building), ai_pf.m_inputResource1, ref ___m_inputSection, ref ___m_inputTooltipArea);
-                _updateTooltip(id, building.m_customBuffer1, ai_pf.GetOutputBufferSize(id, ref building), ai_pf.m_outputResource, ref ___m_outputSection, ref ___m_outputTooltipArea);
+                _updateTooltip(id, building.m_customBuffer2, ai_pf.GetInputBufferSize1(id, ref building), ai_pf.m_inputResource1, ref ___m_inputSection);//, ref ___m_inputTooltipArea);
+                _updateTooltip(id, building.m_customBuffer1, ai_pf.GetOutputBufferSize(id, ref building), ai_pf.m_outputResource, ref ___m_outputSection);//, ref ___m_outputTooltipArea);
                 //Debug.Log($"PF-{id}");
             }
         }
 
-        private static void _updateTooltip(int id, int volume, int bufferSize, TransferManager.TransferReason cargo, ref UIPanel panel, ref UIPanel panel2)
+        private static void _updateTooltip(int id, int volume, int bufferSize, TransferManager.TransferReason cargo, ref UIPanel panel)//, ref UIPanel panel2)
         {
             //Debug.Log($"uTt-{id}");
             int customBuffer = Convert.ToInt32(volume * RI_Data.GetFactorCargo(cargo));
             int outputBufferSize = Convert.ToInt32(bufferSize * RI_Data.GetFactorCargo(cargo));
-            panel2.tooltip = panel.tooltip = StringUtils.SafeFormat(ColossalFramework.Globalization.Locale.Get("INDUSTRYPANEL_BUFFERTOOLTIP"), IndustryWorldInfoPanel.FormatResource((uint)customBuffer), IndustryWorldInfoPanel.FormatResourceWithUnit((uint)outputBufferSize, cargo));
+            //panel2.tooltip = 
+            panel.tooltip = StringUtils.SafeFormat(ColossalFramework.Globalization.Locale.Get("INDUSTRYPANEL_BUFFERTOOLTIP"), IndustryWorldInfoPanel.FormatResource((uint)customBuffer), IndustryWorldInfoPanel.FormatResourceWithUnit((uint)outputBufferSize, cargo));
         } 
     }
 
